@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "88573950609",
+    "project_id": "awaken-alarm",
+    "storage_bucket": "awaken-alarm.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:88573950609:android:96f5e52f4186c0e3431d30",
+        "android_client_info": {
+          "package_name": "com.example.awaken_mockup"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "88573950609-fq8t1fe1lhogjvqboig72ea0sbk53oci.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXhIk7s0h2or67qXt4qRYY_mzuZihbWDk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "88573950609-fq8t1fe1lhogjvqboig72ea0sbk53oci.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
