@@ -19,16 +19,19 @@ class Awaken extends StatefulWidget {
 
 class _AwakenState extends State<Awaken> {
   final Future<FirebaseApp> _initialization = Firebase.initializeApp();
+  //final firestoreInstance = FirebaseFirestore.instance;
 
+  String documentID;
   void login(String mail, String pass) async {
     print('called');
-    // TODO: Send login to firebase
     try {
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: mail,
-          password: pass
-      );
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: mail, password: pass);
       print('Signed in!');
+      documentID = userCredential.user.photoURL;
+      String nickname = userCredential.user.displayName;
+      print("Nickname: $nickname Document id: $documentID");
+      FlutterRingtonePlayer.playNotification();
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
         print('No user found for that email.');
@@ -38,8 +41,13 @@ class _AwakenState extends State<Awaken> {
     }
   }
 
-  void setAlarm() {
+  void setAlarm(int hour, int minute, String buddyID) async {
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(documentID)
+        .update({'alarm_hour': hour, 'alarm_minute': minute, 'buddy': buddyID });
     print('Alarm set');
+    FlutterRingtonePlayer.playNotification();
   }
 
   void iAmAwake() {
@@ -57,8 +65,13 @@ class _AwakenState extends State<Awaken> {
 
   String pwdText;
 
-  @override
+  String buddyID;
 
+  String hour;
+
+  String minute;
+
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
@@ -74,7 +87,9 @@ class _AwakenState extends State<Awaken> {
             children: [
               TextField(
                 obscureText: false,
-              onChanged: (newText) { emailText= newText; },
+                onChanged: (newText) {
+                  emailText = newText;
+                },
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: 'Email',
@@ -82,15 +97,18 @@ class _AwakenState extends State<Awaken> {
               ),
               TextField(
                 obscureText: true,
-                  onChanged: (newText) { pwdText = newText; },
+                onChanged: (newText) {
+                  pwdText = newText;
+                },
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: 'Password',
                 ),
               ),
               ElevatedButton(
-                onPressed: () {login(emailText, pwdText); }
-                ,
+                onPressed: () {
+                  login(emailText, pwdText);
+                },
                 style: ElevatedButton.styleFrom(
                   primary: Colors.black38, // background
                   onPrimary: Colors.white, // foreground
@@ -106,6 +124,9 @@ class _AwakenState extends State<Awaken> {
               Divider(),
               TextField(
                 obscureText: false,
+                onChanged: (newText) {
+                  buddyID = newText;
+                },
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: 'Buddy Email',
@@ -124,6 +145,9 @@ class _AwakenState extends State<Awaken> {
                     width: 40,
                     height: 30,
                     child: TextField(
+                      onChanged: (newText) {
+                        hour = newText;
+                      },
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(labelText: 'Hour'),
                     ),
@@ -133,11 +157,14 @@ class _AwakenState extends State<Awaken> {
                     height: 30,
                     child: TextField(
                       keyboardType: TextInputType.number,
+                      onChanged: (newText) {
+                        minute = newText;
+                      },
                       decoration: InputDecoration(labelText: 'Minute'),
                     ),
                   ),
                   ElevatedButton(
-                    onPressed: setAlarm,
+                    onPressed: () { setAlarm(int.parse(hour), int.parse(minute), buddyID); },
                     style: ElevatedButton.styleFrom(
                       primary: Colors.black38,
                       onPrimary: Colors.white,
@@ -149,7 +176,6 @@ class _AwakenState extends State<Awaken> {
                   ),
                 ],
               ),
-
               Divider(),
               ElevatedButton(
                 onPressed: iAmAwake,

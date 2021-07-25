@@ -10,6 +10,11 @@
 * Solved dependency hell
 * Added mock functions
 * Added application icons
+* Changed to stateful widget
+* Added login
+* Added alarm/buddy setup to cloud Firestore
+
+
 
 
 
