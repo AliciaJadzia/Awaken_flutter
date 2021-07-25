@@ -9,5 +9,7 @@
 * Finalized layout
 * Solved dependency hell
 * Added mock functions
+* Added application icons
+
 
 

@@ -7,14 +7,35 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 void main() {
-  runApp(MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(Awaken());
 }
 
-class MyApp extends StatelessWidget {
+class Awaken extends StatefulWidget {
   // This widget is the root of your application.
-  void login() {
+  @override
+  _AwakenState createState() => _AwakenState();
+}
+
+class _AwakenState extends State<Awaken> {
+  final Future<FirebaseApp> _initialization = Firebase.initializeApp();
+
+  void login(String mail, String pass) async {
     print('called');
     // TODO: Send login to firebase
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: mail,
+          password: pass
+      );
+      print('Signed in!');
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        print('No user found for that email.');
+      } else if (e.code == 'wrong-password') {
+        print('Wrong password provided for that user.');
+      }
+    }
   }
 
   void setAlarm() {
@@ -28,9 +49,16 @@ class MyApp extends StatelessWidget {
     FlutterRingtonePlayer.playNotification();
   }
 
-  // TODO: implement await for alarm.
+  void playAlarm() {
+    FlutterRingtonePlayer.playAlarm();
+  }
+
+  String emailText;
+
+  String pwdText;
 
   @override
+
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
@@ -46,6 +74,7 @@ class MyApp extends StatelessWidget {
             children: [
               TextField(
                 obscureText: false,
+              onChanged: (newText) { emailText= newText; },
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: 'Email',
@@ -53,13 +82,15 @@ class MyApp extends StatelessWidget {
               ),
               TextField(
                 obscureText: true,
+                  onChanged: (newText) { pwdText = newText; },
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: 'Password',
                 ),
               ),
               ElevatedButton(
-                onPressed: login,
+                onPressed: () {login(emailText, pwdText); }
+                ,
                 style: ElevatedButton.styleFrom(
                   primary: Colors.black38, // background
                   onPrimary: Colors.white, // foreground
@@ -77,7 +108,7 @@ class MyApp extends StatelessWidget {
                 obscureText: false,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
-                  labelText: 'Buddy User ID',
+                  labelText: 'Buddy Email',
                 ),
               ),
               Row(
