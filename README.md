@@ -18,7 +18,8 @@
 
 ### Build:
 
-APK is in ```build/app/outputs/flutter-apk/app-release.apk``` it's unsigned because I have little time. 
+APK is in the root folder, it's unsigned because I have little time. 
+If it crashes let me know.
 
 
 
