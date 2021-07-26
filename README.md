@@ -13,7 +13,12 @@
 * Changed to stateful widget
 * Added login
 * Added alarm/buddy setup to cloud Firestore
+* Fixed photoURL fiasco
+* Added going to sleep button
 
+### Build:
+
+APK is in ```build/app/outputs/flutter-apk/app-release.apk``` it's unsigned because I have little time. 
 
 
 

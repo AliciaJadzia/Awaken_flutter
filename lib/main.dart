@@ -28,7 +28,7 @@ class _AwakenState extends State<Awaken> {
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: mail, password: pass);
       print('Signed in!');
-      documentID = userCredential.user.photoURL;
+      documentID = userCredential.user.uid;
       String nickname = userCredential.user.displayName;
       print("Nickname: $nickname Document id: $documentID");
       FlutterRingtonePlayer.playNotification();
@@ -79,7 +79,7 @@ class _AwakenState extends State<Awaken> {
           title: Text('Awaken'),
           backgroundColor: Colors.pink,
         ),
-        backgroundColor: Colors.grey,
+        backgroundColor: Colors.white70,
         body: Padding(
           padding: const EdgeInsets.all(10.0),
           child: Column(
@@ -177,19 +177,38 @@ class _AwakenState extends State<Awaken> {
                 ],
               ),
               Divider(),
-              ElevatedButton(
-                onPressed: iAmAwake,
-                style: ElevatedButton.styleFrom(
-                  primary: Colors.black38, // background
-                  onPrimary: Colors.lightBlueAccent, // foreground
-                ),
-                child: Text(
-                  'I am Awake',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+              Row(
+                children: [
+                  ElevatedButton(
+                    onPressed: iAmAwake,
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.black38, // background
+                      onPrimary: Colors.yellow, // foreground
+                    ),
+                    child: Text(
+                      'I\'m Awake',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                ),
+                  SizedBox(width: 15,),
+                  ElevatedButton(
+                    onPressed: iAmAwake,
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.black38, // background
+                      onPrimary: Colors.lightBlueAccent, // foreground
+                    ),
+                    child: Text(
+                      'I\'m going to sleep',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
