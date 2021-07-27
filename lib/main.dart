@@ -5,10 +5,13 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(Awaken());
+  runApp(MaterialApp(home: Awaken(),)
+      );
 }
 
 class Awaken extends StatefulWidget {
@@ -19,8 +22,8 @@ class Awaken extends StatefulWidget {
 
 class _AwakenState extends State<Awaken> {
   final Future<FirebaseApp> _initialization = Firebase.initializeApp();
-  //final firestoreInstance = FirebaseFirestore.instance;
 
+  bool loggedIn = false;
   String documentID;
   void login(String mail, String pass) async {
     print('called');
@@ -31,6 +34,7 @@ class _AwakenState extends State<Awaken> {
       documentID = userCredential.user.uid;
       String nickname = userCredential.user.displayName;
       print("Nickname: $nickname Document id: $documentID");
+      loggedIn = true;
       FlutterRingtonePlayer.playNotification();
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
@@ -45,15 +49,34 @@ class _AwakenState extends State<Awaken> {
     FirebaseFirestore.instance
         .collection('users')
         .doc(documentID)
-        .update({'alarm_hour': hour, 'alarm_minute': minute, 'buddy': buddyID });
+        .update({'alarm_hour': hour, 'alarm_minute': minute, 'buddy': buddyID});
     print('Alarm set');
     FlutterRingtonePlayer.playNotification();
   }
 
   void iAmAwake() {
     var now = DateTime.now();
-    print('called, awake $now');
+    String formattedDate = DateFormat('yyyy-MM-dd_kk-mm').format(now);
+    print('called, awake $formattedDate');
     // TODO: Send time event to firebase.
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(documentID).collection('data').doc(formattedDate).set({
+      "wakeup_time": formattedDate
+    });
+    FlutterRingtonePlayer.playNotification();
+  }
+
+  void gotoSleep() {
+    var now = DateTime.now();
+    String formattedDate = DateFormat('yyyy-MM-dd_kk-mm').format(now);
+    print('called, asleep $formattedDate');
+    // TODO: Send time event to firebase.
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(documentID).collection('data').doc(formattedDate).set({
+      "sleep_time": formattedDate
+    });
     FlutterRingtonePlayer.playNotification();
   }
 
@@ -164,7 +187,9 @@ class _AwakenState extends State<Awaken> {
                     ),
                   ),
                   ElevatedButton(
-                    onPressed: () { setAlarm(int.parse(hour), int.parse(minute), buddyID); },
+                    onPressed: () {
+                      setAlarm(int.parse(hour), int.parse(minute), buddyID);
+                    },
                     style: ElevatedButton.styleFrom(
                       primary: Colors.black38,
                       onPrimary: Colors.white,
@@ -180,7 +205,28 @@ class _AwakenState extends State<Awaken> {
               Row(
                 children: [
                   ElevatedButton(
-                    onPressed: iAmAwake,
+                    onPressed: () {
+                      if(loggedIn==true){
+                        iAmAwake();
+                      } else {
+                        Alert(
+                          context: context,
+                          type: AlertType.info,
+                          title: "You\'re not Logged in",
+                          desc: "Please log in",
+                          buttons: [
+                            DialogButton(
+                              child: Text(
+                                "Ok",
+                                style: TextStyle(color: Colors.white, fontSize: 20),
+                              ),
+                              onPressed: () => Navigator.pop(context),
+                              width: 120,
+                            )
+                          ],
+                        ).show();
+                      }
+                    },
                     style: ElevatedButton.styleFrom(
                       primary: Colors.black38, // background
                       onPrimary: Colors.yellow, // foreground
@@ -193,9 +239,32 @@ class _AwakenState extends State<Awaken> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 15,),
+                  SizedBox(
+                    width: 15,
+                  ),
                   ElevatedButton(
-                    onPressed: iAmAwake,
+                    onPressed: () {
+                      if(loggedIn==true){
+                        gotoSleep();
+                      } else {
+                        Alert(
+                          context: context,
+                          type: AlertType.info,
+                          title: "You\'re not Logged in",
+                          desc: "Please log in",
+                          buttons: [
+                            DialogButton(
+                              child: Text(
+                                "Ok",
+                                style: TextStyle(color: Colors.white, fontSize: 20),
+                              ),
+                              onPressed: () => Navigator.pop(context),
+                              width: 120,
+                            )
+                          ],
+                        ).show();
+                      }
+                    },
                     style: ElevatedButton.styleFrom(
                       primary: Colors.black38, // background
                       onPrimary: Colors.lightBlueAccent, // foreground
@@ -217,3 +286,5 @@ class _AwakenState extends State<Awaken> {
     );
   }
 }
+
+

@@ -15,12 +15,14 @@
 * Added alarm/buddy setup to cloud Firestore
 * Fixed photoURL fiasco
 * Added going to sleep button
+* Added firestore wake and sleep db entries
 
 ### Build:
 
 APK is in the root folder, it's unsigned because I have little time. 
 If it crashes let me know.
 
+Outdated for now, the apk build takes like 20 minutes and turns my venerable laptop into a nuclear reactor.
 
 
 
