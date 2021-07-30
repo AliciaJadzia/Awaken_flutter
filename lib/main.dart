@@ -9,7 +9,14 @@ import 'package:intl/intl.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'dart:io';
 
+
+void playAlarm() {
+  FlutterRingtonePlayer.playAlarm();
+  sleep(Duration(seconds:5)); // Change later to longer duration
+  FlutterRingtonePlayer.stop();
+}
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // If you're going to use other Firebase services in the background, such as Firestore,
@@ -17,7 +24,14 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
 
   print("Handling a background message: ${message.messageId}");
+  print(message);
+  if (message.data["body"] == "ring") {
+    playAlarm();
+  }
 }
+
+
+
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,13 +39,19 @@ void main() {
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     print('Got a message whilst in the foreground!');
     print('Message data: ${message.data}');
+    print(message);
+
+    if (message.data["body"] == "ring") {
+      playAlarm();
+    }
 
     if (message.notification != null) {
       print('Message also contained a notification: ${message.notification}');
     }
   });
-  runApp(MaterialApp(home: Awaken(),)
-      );
+  runApp(MaterialApp(
+    home: Awaken(),
+  ));
 }
 
 class Awaken extends StatefulWidget {
@@ -45,6 +65,7 @@ class _AwakenState extends State<Awaken> {
 
   bool loggedIn = false;
   String documentID;
+  String userToken;
   void login(String mail, String pass) async {
     print('called');
     try {
@@ -55,6 +76,10 @@ class _AwakenState extends State<Awaken> {
       String nickname = userCredential.user.displayName;
       print("Nickname: $nickname Document id: $documentID");
       loggedIn = true;
+      FirebaseMessaging.instance.getToken().then((token) {
+        print(token); // Print the Token in Console
+        userToken = token;
+      });
       FlutterRingtonePlayer.playNotification();
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
@@ -69,7 +94,7 @@ class _AwakenState extends State<Awaken> {
     FirebaseFirestore.instance
         .collection('users')
         .doc(documentID)
-        .update({'alarm_hour': hour, 'alarm_minute': minute, 'buddy': buddyID});
+        .update({'alarm_hour': hour, 'alarm_minute': minute, 'buddy': buddyID, 'fcmID': userToken});
     print('Alarm set');
     FlutterRingtonePlayer.playNotification();
   }
@@ -81,10 +106,11 @@ class _AwakenState extends State<Awaken> {
     // TODO: Send time event to firebase.
     FirebaseFirestore.instance
         .collection('users')
-        .doc(documentID).collection('data').doc(formattedDate).set({
-      "wakeup_time": formattedDate
-    });
-    FlutterRingtonePlayer.playNotification();
+        .doc(documentID)
+        .collection('data')
+        .doc(formattedDate)
+        .set({"wakeup_time": formattedDate});
+    FlutterRingtonePlayer.stop();
   }
 
   void gotoSleep() {
@@ -94,15 +120,13 @@ class _AwakenState extends State<Awaken> {
     // TODO: Send time event to firebase.
     FirebaseFirestore.instance
         .collection('users')
-        .doc(documentID).collection('data').doc(formattedDate).set({
-      "sleep_time": formattedDate
-    });
+        .doc(documentID)
+        .collection('data')
+        .doc(formattedDate)
+        .set({"sleep_time": formattedDate});
     FlutterRingtonePlayer.playNotification();
   }
 
-  void playAlarm() {
-    FlutterRingtonePlayer.playAlarm();
-  }
 
   String emailText;
 
@@ -226,7 +250,7 @@ class _AwakenState extends State<Awaken> {
                 children: [
                   ElevatedButton(
                     onPressed: () {
-                      if(loggedIn==true){
+                      if (loggedIn == true) {
                         iAmAwake();
                       } else {
                         Alert(
@@ -238,7 +262,8 @@ class _AwakenState extends State<Awaken> {
                             DialogButton(
                               child: Text(
                                 "Ok",
-                                style: TextStyle(color: Colors.white, fontSize: 20),
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 20),
                               ),
                               onPressed: () => Navigator.pop(context),
                               width: 120,
@@ -264,7 +289,7 @@ class _AwakenState extends State<Awaken> {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      if(loggedIn==true){
+                      if (loggedIn == true) {
                         gotoSleep();
                       } else {
                         Alert(
@@ -276,7 +301,8 @@ class _AwakenState extends State<Awaken> {
                             DialogButton(
                               child: Text(
                                 "Ok",
-                                style: TextStyle(color: Colors.white, fontSize: 20),
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 20),
                               ),
                               onPressed: () => Navigator.pop(context),
                               width: 120,
@@ -306,5 +332,3 @@ class _AwakenState extends State<Awaken> {
     );
   }
 }
-
-
